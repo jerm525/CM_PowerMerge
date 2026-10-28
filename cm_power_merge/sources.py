@@ -11,6 +11,7 @@ import pandas as pd
 
 from .config import SqlConfig, name_for_month, prior_month_end
 from .logging_setup import get_logger
+from decimal import Decimal
 
 log = get_logger("sources")
 
@@ -64,6 +65,9 @@ def load_cm_from_sql(cfg: SqlConfig, month: date) -> pd.DataFrame:
         cur.execute(f"SET NOCOUNT ON; EXEC {cfg.stored_proc} @ReportingMonth = ?", month)
         df = _rows_to_frame(cur)
     log.info("Stored procedure returned %s rows, %s columns", f"{len(df):,}", df.shape[1])
+    print(df['Unit Price'].iloc[0])
+    print(type(df['Unit Price'].iloc[0]))
+    df['Unit Price'] = df['Unit Price'].astype(float)
     return df
 
 
