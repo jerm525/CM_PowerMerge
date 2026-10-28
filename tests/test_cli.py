@@ -127,7 +127,7 @@ def test_sql_helpers():
     df = pd.DataFrame({"a": [1, 2], "b": [1.5, None], "c": ["x", None], "d": [True, False],
                        "Reporting Month": [pd.Timestamp("2026-09-30").date()] * 2})
     assert [infer_sql_type(df[c]) for c in df.columns] == ["BIGINT", "FLOAT", "NVARCHAR(4000)", "BIT", "DATE"]
-    ddl = ddl_for(df, "Corp_Dev.stg_ColoPowerMerged")
+    ddl = ddl_for(df, "Corp_Dev.tbl__stg_ColoKwAudit")
     assert "[RunId]" in ddl and "[Reporting Month] DATE" in ddl and ddl.startswith("CREATE TABLE [Corp_Dev].")
     try:
         quote_table("x]; DROP TABLE y;--")
