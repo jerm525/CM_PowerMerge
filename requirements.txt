@@ -1,0 +1,6 @@
+pandas>=2.1
+numpy>=1.26
+openpyxl>=3.1
+xlsxwriter>=3.1
+pyodbc>=5.0
+tomli>=2.0; python_version < "3.11"
