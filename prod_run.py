@@ -17,6 +17,6 @@ if __name__ == "__main__":
 
     # ongoing:
     main([
-        "--config", "config.toml",
+        "--config", r"C:\Users\jeremy.suwinski\Documents\Projects\CM_PowerMerge\config.toml",
         "run"
     ])
