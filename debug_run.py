@@ -21,3 +21,18 @@ if __name__ == "__main__":
         # Can comment out pm-file after intial output is ran
 
     ])
+    # cfg = SqlConfig
+    # stg, prod = cfg.staging_table, cfg.production_table
+    # prod_db = cfg.production_database
+    # sl.quote_table(prod)
+    #
+    # with contextlib.closing(sl.connect(cfg= SqlConfig, autocommit=False)) as conn:
+    #     cur = conn.cursor()
+    #     try:
+    #         cur.fast_executemany = True
+    #         cur.execute(f"SELECT TOP 1 * FROM eda_lake.xlsx_extract.tbl__xlsx_m_colo_kw_audit")
+    #         loaded = cur.fetchall()
+    #         print(loaded)
+    #     except Exception:
+    #         conn.rollback()
+    #         raise
