@@ -55,14 +55,18 @@ class SqlConfig:
     trusted_connection: bool = True
     encrypt: Optional[bool] = None            # needed explicitly for ODBC Driver 18
     trust_server_certificate: Optional[bool] = None
-    conn_str_env: str = "CM_POWER_SQL_CONN_STR"   # full connection string, wins if set
+    conn_str_env: str = "EDA_REPOSITORY"   # full connection string, wins if set
     user_env: str = "CM_POWER_SQL_USER"
     password_env: str = "CM_POWER_SQL_PASSWORD"
     stored_proc: str = "Corp_Dev.usp_ColoPowerExport"
     staging_table: str = "Corp_Dev.tbl__stg_ColoPowerMerged"
-    production_table: str = "Corp_Dev.tbl__ColoPowerMerged"
+    production_database: str = "eda_lake"
+    production_table: str = "Corp_Dev.tbl__ColoPowerMerged" #not used for connection only insert promote
     month_column: str = "Reporting Month"     # SQL column holding the reporting month
     timeout_seconds: int = 600
+    column_map: dict[str, str] = field(default_factory=dict)
+
+
 
 
 @dataclass
