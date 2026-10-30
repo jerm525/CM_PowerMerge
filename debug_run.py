@@ -12,14 +12,20 @@ if __name__ == "__main__":
     #
     #
     # ])
-
+    #
+    # main([
+    #     "--config", "config.toml",
+    #     "run",
+    #     "--month", "2026-09",
+    #     "--pm-file", r"C:\Users\jeremy.suwinski\OneDrive - TierPoint, LLC\Documents\temp\PM Power Commit Data.xlsx",
+    #     # Can comment out pm-file after intial output is ran
+    #
+    # ])
     main([
         "--config", "config.toml",
-        "run",
-        "--month", "2026-09",
-        "--pm-file", r"C:\Users\jeremy.suwinski\OneDrive - TierPoint, LLC\Documents\temp\PM Power Commit Data.xlsx",
-        # Can comment out pm-file after intial output is ran
-
+        "promote",
+        '--run-id', '6d5074da',
+        '--month', '2026-09-30'
     ])
     # cfg = SqlConfig
     # stg, prod = cfg.staging_table, cfg.production_table

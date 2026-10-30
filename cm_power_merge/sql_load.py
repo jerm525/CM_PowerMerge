@@ -82,9 +82,9 @@ def _convert(v, sql_type: str):
     return float(v)
 
 
-def table_columns(cfg: SqlConfig, table: str) -> list:
+def table_columns(cfg: SqlConfig, table: str, database: str) -> list:
     schema, name = _split(table)
-    df = read_sql_frame(cfg, "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS "
+    df = read_sql_frame(cfg, f"SELECT COLUMN_NAME FROM {database}.INFORMATION_SCHEMA.COLUMNS "
                              "WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? ORDER BY ORDINAL_POSITION", (schema, name))
     return df["COLUMN_NAME"].tolist() if not df.empty else []
 
@@ -106,7 +106,7 @@ def load_to_staging(df: pd.DataFrame, cfg: SqlConfig, run_id: str) -> int:
     df.rename(columns=cfg.column_map, inplace=True)
 
     table = cfg.staging_table
-    existing = table_columns(cfg, table)
+    existing = table_columns(cfg, table, cfg.database)
     if not existing:
         raise RuntimeError(f"Staging table {table} does not exist. Review `ddl` output and create it first.")
     missing = [c for c in df.columns if c not in existing]
@@ -148,10 +148,9 @@ def load_to_staging(df: pd.DataFrame, cfg: SqlConfig, run_id: str) -> int:
 def promote(cfg: SqlConfig, run_id: str, month: date) -> int:
     """Replace the month in production with the staged run, atomically."""
 
-    #Replace with mapping
     stg, prod = cfg.staging_table, cfg.production_table
-    stg_cols = [c for c in table_columns(cfg, stg) if c not in AUDIT_COLS]
-    prod_cols = table_columns(cfg, prod)
+    stg_cols = [c for c in table_columns(cfg, stg, cfg.database) if c not in AUDIT_COLS]
+    prod_cols = table_columns(cfg, prod, cfg.production_database)
     if not prod_cols:
         raise RuntimeError(f"Production table {prod} not found")
     missing = [c for c in stg_cols if c not in prod_cols]
@@ -167,18 +166,18 @@ def promote(cfg: SqlConfig, run_id: str, month: date) -> int:
     with contextlib.closing(connect(cfg, autocommit=False)) as conn:
         cur = conn.cursor()
         try:
-            cur.execute(f"SELECT COUNT(*) FROM {quote_table(stg)} WHERE [RunId] = ?", run_id)
+            cur.execute(f"SELECT COUNT(*) FROM {quote_table(stg)} WHERE [eda_guid] = ?", run_id)
             staged = cur.fetchone()[0]
             if staged == 0:
-                raise RuntimeError(f"No staged rows for RunId {run_id}")
-            cur.execute(f"SELECT COUNT(*) FROM {quote_table(stg)} WHERE [RunId] = ? AND {quote_col(mcol)} <> ?",
+                raise RuntimeError(f"No staged rows for eda_guid {run_id}")
+            cur.execute(f"SELECT COUNT(*) FROM {quote_table(stg)} WHERE [eda_guid] = ? AND {quote_col(mcol)} <> ?",
                         run_id, month)
             if cur.fetchone()[0]:
-                raise RuntimeError(f"Staged RunId {run_id} contains rows for a month other than {month}")
-            cur.execute(f"DELETE FROM {quote_table(prod)} WHERE {quote_col(mcol)} = ?", month)
-            removed = cur.rowcount
+                raise RuntimeError(f"Staged eda_guid {run_id} contains rows for a month other than {month}")
+            # cur.execute(f"DELETE FROM {quote_table(prod)} WHERE {quote_col(mcol)} = ?", month)
+            # removed = cur.rowcount
             cur.execute(f"INSERT INTO {cfg.production_database}.{quote_table(prod)} ({col_list}) SELECT {col_list} "
-                        f"FROM {quote_table(stg)} WHERE [RunId] = ?", run_id)
+                        f"FROM {quote_table(stg)} WHERE [eda_guid] = ?", run_id)
             inserted = cur.rowcount
             if inserted != staged:
                 raise RuntimeError(f"Inserted {inserted} rows but staged {staged}; rolled back")
@@ -186,8 +185,7 @@ def promote(cfg: SqlConfig, run_id: str, month: date) -> int:
         except Exception:
             conn.rollback()
             raise
-    log.info("Promoted RunId %s to %s for %s: replaced %s rows with %s", run_id, prod, month,
-             f"{removed:,}", f"{inserted:,}")
+    log.info("Promoted RunId %s to %s for %s: Inserted rows  %s", run_id, prod, month,f"{inserted:,}")
     return inserted
 
 
