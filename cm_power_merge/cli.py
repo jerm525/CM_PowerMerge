@@ -199,6 +199,13 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
     cfg = load_config(args.config)
+    if args.config is not None:
+        log.info("loading config from %s", args.config.name)
+        print(args.config.name)
+    else:
+        log.info("no config file specified, using default config")
+    log.info("Stage table: %s", cfg.sql.staging_table)
+    log.info("Target table: %s", cfg.sql.production_table)
     run_id, collector = setup_logging(cfg.paths.log_dir, args.run_id_override, console=not args.quiet)
     try:
         return args.func(args, cfg, run_id, collector)
