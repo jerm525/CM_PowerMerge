@@ -24,7 +24,7 @@ if __name__ == "__main__":
     main([
         "--config", "config.toml",
         "promote",
-        '--run-id', '6d5074da',
+        '--run-id', '4f88d173',
         '--month', '2026-09-30'
     ])
     # cfg = SqlConfig

@@ -59,10 +59,10 @@ class SqlConfig:
     user_env: str = "CM_POWER_SQL_USER"
     password_env: str = "CM_POWER_SQL_PASSWORD"
     stored_proc: str = "Corp_Dev.usp_ColoPowerExport"
-    staging_table: str = "Corp_Dev.tbl__stg_ColoPowerMerged"
+    staging_table: str = "Corp_Dev.tbl__stg_ColoKwAudit"
     production_database: str = "eda_lake"
-    production_table: str = "Corp_Dev.tbl__ColoPowerMerged" #not used for connection only insert promote
-    month_column: str = "Reporting Month"     # SQL column holding the reporting month
+    production_table: str = "xlsx_extract.tbl__xlsx_m_colo_kw_audit" #not used for connection only insert promote
+    month_column: str = "reporting_month"     # SQL column holding the reporting month
     timeout_seconds: int = 600
     column_map: dict[str, str] = field(default_factory=dict)
 
