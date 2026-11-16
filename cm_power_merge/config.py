@@ -166,7 +166,7 @@ class NotifyConfig:
 @dataclass
 class PromoteConfig:
     load_staging: bool = False                # run: write validated rows to the staging table
-    mode: str = "off"                         # off | manual | auto  (auto = promote on clean run)
+    mode: str = "manual"                         # off | manual | auto  (auto = promote on clean run)
     allow_warn: bool = False                  # auto mode: promote even when WARNs exist
 
 
