@@ -85,6 +85,7 @@ def cmd_run(args, cfg: AppConfig, run_id: str, collector) -> int:
         else:
             from .sql_load import load_to_staging, promote
             stage_df = res.data.set_axis(swap_header_names(list(res.data.columns), cfg.excel.swap_headers), axis=1)
+            log.info("staging_table from config = %s", cfg.sql.staging_table)
             load_to_staging(stage_df, cfg.sql, run_id)
             can_auto = cfg.promote.mode == "auto" and (status == "PASS" or cfg.promote.allow_warn)
             if args.promote or can_auto:
@@ -199,7 +200,14 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv=None) -> int:
     args = build_parser().parse_args(argv)
     cfg = load_config(args.config)
+    log.info(
+        "CONFIG=%s STAGING=%s",
+        args.config,
+        cfg.sql.staging_table
+    )
     run_id, collector = setup_logging(cfg.paths.log_dir, args.run_id_override, console=not args.quiet)
+    log.info("Config file = %s", args.config)
+    log.info("Staging Table = %s", cfg.sql.staging_table)
     try:
         return args.func(args, cfg, run_id, collector)
     except Exception as exc:
