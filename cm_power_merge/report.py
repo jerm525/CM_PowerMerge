@@ -246,6 +246,7 @@ def write_exceptions(out_dir: Path, res: PipelineResult) -> list:
         "churned_sans.csv": res.churned, "added_sans.csv": res.added,
         "duplicate_sans_cm.csv": res.dup_cm, "duplicate_sans_pm.csv": res.dup_pm,
         "null_san_rows.csv": res.null_san, "adjusted_kw_changes.csv": res.kw_diffs,
+        "unmapped_cmh.csv": res.unmapped_cmh,
     }
     written = []
     for name, df in items.items():

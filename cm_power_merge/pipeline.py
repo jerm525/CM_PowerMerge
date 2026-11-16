@@ -36,6 +36,7 @@ class PipelineResult:
     dup_pm: pd.DataFrame
     null_san: pd.DataFrame
     kw_diffs: pd.DataFrame
+    unmapped_cmh: pd.DataFrame
     stats: dict = field(default_factory=dict)
 
 
@@ -246,6 +247,7 @@ def run_pipeline(pm_raw: pd.DataFrame, cm_raw: pd.DataFrame, cfg: AppConfig, mon
     merged = coerce_numeric_columns(merged, numeric)
 
     new_rows = merged["_SOURCE_"].eq("f2_add")
+
     cmh_now = merged["Commercial Model Helper"] if "Commercial Model Helper" in merged.columns \
         else pd.Series(np.nan, index=merged.index)
     blank_new = new_rows & blank_helper(cmh_now)
@@ -260,6 +262,24 @@ def run_pipeline(pm_raw: pd.DataFrame, cm_raw: pd.DataFrame, cfg: AppConfig, mon
     merged = assign_cmh_for_new_rows(merged, ref, require_ref=cfg.rules.model_ref_required)
     cmh_after = merged["Commercial Model Helper"] if "Commercial Model Helper" in merged.columns \
         else pd.Series(np.nan, index=merged.index)
+    #create unmapped output
+    unmapped_cmh = merged.loc[
+        new_rows & blank_helper(cmh_after)
+        ].copy()
+    cols = [
+        "_SAN_",
+        "Base SKU",
+        "F2",
+        "F3",
+        "Customer Number",
+        "Customer Name",
+        "Data Center"
+    ]
+
+    unmapped_cmh = unmapped_cmh[
+        [c for c in cols if c in unmapped_cmh.columns]
+    ]
+
     stats["new_rows_without_cmh"] = int((new_rows & blank_helper(cmh_after)).sum())
 
     gpm_col = targets.get("Gross Power MRR") or "Gross Power MRR"
@@ -290,4 +310,5 @@ def run_pipeline(pm_raw: pd.DataFrame, cm_raw: pd.DataFrame, cfg: AppConfig, mon
     log.info("Pipeline done: %s rows, %s customers, total Gross Power MRR %s, total Adjusted kW %s",
              f"{len(data):,}", f"{stats['customers']:,}", f"{mrr:,.2f}", f"{kw:,.2f}")
     return PipelineResult(data=data, layout=layout, pm=pm, cm=cm, churned=churned, added=added,
-                          dup_cm=dup_cm, dup_pm=dup_pm, null_san=null_san, kw_diffs=kw_diffs, stats=stats)
+                          dup_cm=dup_cm, dup_pm=dup_pm, null_san=null_san, kw_diffs=kw_diffs, stats=stats,
+                          unmapped_cmh=unmapped_cmh)
